@@ -1,0 +1,6 @@
+[submodule "puppet/modules/jenkins"]
+	path = puppet/modules/jenkins
+	url = https://github.com/jenkinsci/puppet-jenkins.git
+[submodule "puppet/modules/stdlib"]
+	path = puppet/modules/stdlib
+	url = https://github.com/puppetlabs/puppetlabs-stdlib.git
