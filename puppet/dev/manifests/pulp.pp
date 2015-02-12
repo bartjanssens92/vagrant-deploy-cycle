@@ -16,16 +16,12 @@ node 'pulp' {
     mirrorlist => 'https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch',
   }
 
+  ###########
+  # MONGODB #
+  ###########
+
   ########
   # PULP #
   ########
-
-  class { 'pulp':
-    pulp_version => '2',
-    pulp_server  => true,
-    pulp_admin   => true,
-    repo_enabled => true,
-    require      => Yumrepo['pulp-enabled'],
-  }
 
 }
