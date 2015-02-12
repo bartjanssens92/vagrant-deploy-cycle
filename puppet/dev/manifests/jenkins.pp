@@ -1,5 +1,7 @@
 node 'jenkins' {
 
+  $jenkins_port = hiera('jenkins_port')
+
   ###########
   # JENKINS #
   ###########
