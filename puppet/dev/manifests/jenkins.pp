@@ -1,6 +1,18 @@
 node 'jenkins' {
 
-  $jenkins_port = hiera('jenkins_port')
+  include vagrantFix
+
+  ############
+  # SOFTWARE #
+  ###########
+
+  $soft = ['java-1.6.0-openjdk-devel.x86_64']
+
+  package { $soft:
+    ensure => 'present',
+  }
+
+  $jenkins_port = hiera('jenkins_port', 8080)
 
   ###########
   # JENKINS #
