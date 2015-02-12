@@ -7,3 +7,6 @@
 [submodule "puppet/modules/pulp"]
 	path = puppet/modules/pulp
 	url = https://github.com/KrisBuytaert/puppet-pulp.git
+[submodule "puppet/modules/mongodb"]
+	path = puppet/modules/mongodb
+	url = https://github.com/puppetlabs/puppetlabs-mongodb.git
