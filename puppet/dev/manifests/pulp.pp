@@ -1,0 +1,5 @@
+node 'pulp' {
+
+  include vagrantFix
+
+}
