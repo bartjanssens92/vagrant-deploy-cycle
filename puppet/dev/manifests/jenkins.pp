@@ -1,7 +1,5 @@
 node 'jenkins' {
 
-  include vagrantFix
-
   ############
   # SOFTWARE #
   ###########

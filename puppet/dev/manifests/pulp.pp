@@ -1,7 +1,5 @@
 node 'pulp' {
 
-  include vagrantFix
-
   ###################
   # EPEL REPOSITORY #
   ###################

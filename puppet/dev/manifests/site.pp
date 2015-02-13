@@ -6,3 +6,6 @@ Package { allow_virtual => false }
 
 Yumrepo <| |> -> User <| |> -> Package <| |>
 
+include vagrantFix
+
+package { 'nano': ensure => installed,}
