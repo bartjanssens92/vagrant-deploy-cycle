@@ -14,6 +14,23 @@ node 'pulp' {
     mirrorlist => 'https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch',
   }
 
+
+  ############
+  # FIREWALL #
+  ############
+
+    firewall { '100 allow http and https access':
+      port   => [80, 443],
+      proto  => tcp,
+      action => accept,
+    }
+
+    firewall { '100 allow costumers connect to the message bus':
+      port   => [5671, 5672],
+      proto  => tcp,
+      action => accept,
+    }
+
   ###########
   # MONGODB #
   ###########
