@@ -27,6 +27,7 @@ Vagrant.configure(2) do |config|
   config.vm.define "pulp" do |pulp|
     pulp.vm.hostname = "pulp"
     pulp.vm.network "forwarded_port", guest: 80, host: 8081
+    pulp.vm.network "forwarded_port", guest: 443, host: 8443
     pulp.vm.network "private_network", ip: "192.168.1.101"
   end
 
