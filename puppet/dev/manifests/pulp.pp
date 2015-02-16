@@ -19,23 +19,52 @@ node 'pulp' {
   # FIREWALL #
   ############
 
-    firewall { '100 allow http and https access':
-      port   => [80, 443],
-      proto  => tcp,
-      action => accept,
-    }
+  firewall { '001 allow ssh':
+    port   => 22,
+    action => accept,
+  }
 
-    firewall { '100 allow costumers connect to the message bus':
-      port   => [5671, 5672],
-      proto  => tcp,
-      action => accept,
-    }
+  firewall { '100 allow http and https access':
+    port   => [80, 443],
+    proto  => tcp,
+    action => accept,
+  }
+
+  firewall { '100 allow costumers connect to the message bus':
+    port   => [5671, 5672],
+    proto  => tcp,
+    action => accept,
+  }
+
+  firewall { "999 drop all other requests":
+    action => "drop",
+  }
 
   ###########
   # MONGODB #
   ###########
 
-  include ::mongodb::server
+  yumrepo { 'mongo-stable':
+    descr    => 'MongoDB Repository',
+    baseurl  => 'http://downloads-distro.mongodb.org/repo/redhat/os/x86_64/',
+    gpgcheck => 0,
+    enabled  => 1,
+  }
+
+  class { '::mongodb::server':
+    require => [Yumrepo['mongo-stable'],
+               Exec["add_mongodb_port_t_27017"]],
+  }
+
+  package { 'policycoreutils-python': 
+    ensure => present,
+  }  
+
+  exec { "add_mongodb_port_t_27017":
+    command => "semanage port -a -t mongod_port_t -p tcp 27017",
+    unless  => "semanage port -l|grep \"^mongod_port_t.*tcp.*27017\"",
+    require => Package['policycoreutils-python'],
+  }
 
   ########
   # PULP #
@@ -62,19 +91,19 @@ node 'pulp' {
                  'pulp-puppet-admin-extensions',
                  'pulp-rpm-admin-extensions']
 
-  package { $qpid_soft:
-    ensure => present,
-    require => Yumrepo['pulp-stable'],
-  }
+#  package { $qpid_soft:
+#    ensure => present,
+#    require => Yumrepo['pulp-stable'],
+#  }
 
-  package { $pulp_server_qpid:
-    ensure  => present,
-    require => Yumrepo['pulp-stable'],
-  }
+#  package { $pulp_server_qpid:
+#    ensure  => present,
+#    require => Yumrepo['pulp-stable'],
+#  }
 
-  package { $pulp_admin:
-    ensure => present,
-    require => Yumrepo['pulp-stable'],
-  }
+#  package { $pulp_admin:
+#    ensure => present,
+#    require => Yumrepo['pulp-stable'],
+#  }
 
 }
