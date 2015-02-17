@@ -31,7 +31,7 @@ node 'pulp' {
   }
 
   firewall { '100 allow costumers connect to the message bus':
-    port   => [5671, 5672],
+    port   => [5671, 5672, 27017],
     proto  => tcp,
     action => accept,
   }
@@ -66,61 +66,44 @@ node 'pulp' {
     require => Package['policycoreutils-python'],
   }
 
-  service { 'mongod':
-    ensure  => 'running',
-    require => [Exec['add_mongodb_port_t_27017'],
-                Package['mongodb-server']]
-  }
-
   ########
   # PULP #
   ########
 
-  yumrepo { 'pulp-stable':
+  yumrepo { 'pulp-2.6-beta':
     descr    => 'Pulp Production Releases',
-    baseurl  => 'https://repos.fedorapeople.org/repos/pulp/pulp/v2/stable/$releasever/$basearch/',
+    baseurl  => 'https://repos.fedorapeople.org/repos/pulp/pulp/beta/2.6/$releasever/$basearch/',
     enabled  => 1,
     gpgcheck => 0,
   }
 
-  $qpid_soft = ['qpid-cpp-server',
-                'qpid-cpp-server-store']
+  $qpidd = ['qpid-cpp-server','qpid-cpp-server-store','python-qpid-qmf']
 
-  $pulp_server_qpid = ['pulp-puppet-plugins',
-                       'pulp-rpm-plugins',
-                       'python-qpid',
-                       'python-qpid-qmf']
-
-  $pulp_admin = ['pulp-admin-client',
-                 'pulp-puppet-admin-extensions',
-                 'pulp-rpm-admin-extensions']
-
-
-  exec { 'install-python-pulp-common-2.5.1-1.el6.noarch.rpm':
-    command => '/usr/bin/yum install /tmp/rpms/python-pulp-common-2.5.1-1.el6.noarch.rpm -y',
-    unless  => '/usr/bin/yum list installed | grep python-pulp-common',
-    require => Yumrepo['pulp-stable'],
+  package { $qpidd:
+    ensure  => present,
+    require => Yumrepo['pulp-2.6-beta'],
   }
 
-  exec { 'install-pulp-server-2.5.1-1.el6.noarch.rpm':
-    command => '/usr/bin/yum install /tmp/rpms/pulp-server-2.5.1-1.el6.noarch.rpm -y',
-    unless  => '/usr/bin/yum list installed | grep pulp-server',
-    require => Exec['install-python-pulp-common-2.5.1-1.el6.noarch.rpm'],
+  class { 'pulp':
+    pulp_version => '2',
+    pulp_server  => true,
+    pulp_admin   => true,
+    repo_enabled => false,
+    require => [Exec['add_mongodb_port_t_27017'],
+                Package['mongodb-server'],
+                Package[$qpidd],]
+
   }
 
-#  package { $qpid_soft:
-#    ensure => present,
-#    require => Yumrepo['pulp-stable'],
-#  }
-#
-#  package { $pulp_server_qpid:
-#    ensure  => present,
-#    require => Yumrepo['pulp-stable'],
-#  }
-#
-#  package { $pulp_admin:
-#    ensure => present,
-#    require => Yumrepo['pulp-stable'],
-#  }
+  # Ugly hack to fix wrong config issue with module
+  file { '/tmp/admin.conf.tmp':
+    ensure  => present,
+    content => template('files/admin.conf.erb'),
+  }
+  
+  exec { 'config admin hack':
+    command => '/bin/cat /tmp/admin.conf.tmp > /etc/pulp/admin/admin.conf && /etc/init.d/httpd restart',
+    require => File['/etc/pulp/admin/admin.conf'],
+  }
 
 }
