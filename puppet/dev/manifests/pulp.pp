@@ -51,19 +51,25 @@ node 'pulp' {
     enabled  => 1,
   }
 
-  class { '::mongodb::server':
-    require => [Yumrepo['mongo-stable'],
-               Exec["add_mongodb_port_t_27017"]],
+  package { 'mongodb-server':
+    ensure  => present,
+    require => Yumrepo['mongo-stable'],
   }
 
-  package { 'policycoreutils-python': 
+  package { 'policycoreutils-python':
     ensure => present,
-  }  
+  }
 
   exec { "add_mongodb_port_t_27017":
     command => "semanage port -a -t mongod_port_t -p tcp 27017",
     unless  => "semanage port -l|grep \"^mongod_port_t.*tcp.*27017\"",
     require => Package['policycoreutils-python'],
+  }
+
+  service { 'mongod':
+    ensure  => 'running',
+    require => [Exec['add_mongodb_port_t_27017'],
+                Package['mongodb-server']]
   }
 
   ########
@@ -82,8 +88,6 @@ node 'pulp' {
 
   $pulp_server_qpid = ['pulp-puppet-plugins',
                        'pulp-rpm-plugins',
-                       'pulp-selinux',
-                       'pulp-server',
                        'python-qpid',
                        'python-qpid-qmf']
 
@@ -91,16 +95,29 @@ node 'pulp' {
                  'pulp-puppet-admin-extensions',
                  'pulp-rpm-admin-extensions']
 
+
+  exec { 'install-python-pulp-common-2.5.1-1.el6.noarch.rpm':
+    command => '/usr/bin/yum install /tmp/rpms/python-pulp-common-2.5.1-1.el6.noarch.rpm -y',
+    unless  => '/usr/bin/yum list installed | grep python-pulp-common',
+    require => Yumrepo['pulp-stable'],
+  }
+
+  exec { 'install-pulp-server-2.5.1-1.el6.noarch.rpm':
+    command => '/usr/bin/yum install /tmp/rpms/pulp-server-2.5.1-1.el6.noarch.rpm -y',
+    unless  => '/usr/bin/yum list installed | grep pulp-server',
+    require => Exec['install-python-pulp-common-2.5.1-1.el6.noarch.rpm'],
+  }
+
 #  package { $qpid_soft:
 #    ensure => present,
 #    require => Yumrepo['pulp-stable'],
 #  }
-
+#
 #  package { $pulp_server_qpid:
 #    ensure  => present,
 #    require => Yumrepo['pulp-stable'],
 #  }
-
+#
 #  package { $pulp_admin:
 #    ensure => present,
 #    require => Yumrepo['pulp-stable'],

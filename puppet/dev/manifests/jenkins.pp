@@ -17,9 +17,10 @@ node 'jenkins' {
   ###########
 
   class { 'jenkins':
-    install_java => false,
-    port         => $jenkins_port,
-    repo         => true,
+    install_java       => false,
+    port               => $jenkins_port,
+    repo               => true,
+    configure_firewall => false,
   }
 
   # Make the jenkins user to use with deployments
