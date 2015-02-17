@@ -102,8 +102,21 @@ node 'pulp' {
   }
   
   exec { 'config admin hack':
-    command => '/bin/cat /tmp/admin.conf.tmp > /etc/pulp/admin/admin.conf && /etc/init.d/httpd restart',
+    command => '/bin/cat /tmp/admin.conf.tmp > /etc/pulp/admin/admin.conf',
     require => File['/etc/pulp/admin/admin.conf'],
+    notify  => Service['httpd'],
   }
 
+  # Fix for failing pulp-manage-db command
+  exec { 'pulp-manage-db':
+    command => '/usr/bin/sudo -u apache /usr/bin/pulp-manage-db',
+    creates => '/var/lib/pulp/.inited',
+    require => Exec['manage_pulp_databases'],
+    notify  => Service['httpd'],
+  }
+
+  file { '/var/lib/pulp/.inited':
+    ensure  => present,
+    require => Exec['pulp-manage-db'],
+  }
 }
