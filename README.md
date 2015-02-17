@@ -3,9 +3,11 @@ Then it gets put in a pulp repo and last it gets deployed to the web server.
 
 If this project ever makes it to Github, feel free to play, send pull requests and fork this project.
 
-CHANGELOG
+Setup
+#####
 
-version 0.0.1
-Initial git commit
-
+git clone
+git submodule init
+vagrant up
+get coffee
 
