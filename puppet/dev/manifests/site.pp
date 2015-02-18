@@ -6,6 +6,10 @@ Package { allow_virtual => false }
 
 Yumrepo <| |> -> User <| |> -> Package <| |>
 
-include vagrantFix
+file { '/home/vagrant/.ssh':
+  ensure  => directory,
+  owner   => vagrant,
+  recurse => true,
+}
 
 package { 'nano': ensure => installed,}
